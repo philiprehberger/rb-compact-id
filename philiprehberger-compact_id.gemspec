@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = 'Compact UUID encoding in Base58 and Base62 for shorter, URL-safe identifiers'
   spec.description   = 'Convert UUIDs to compact Base58 or Base62 representations (22 chars vs 36). ' \
-                        'Guaranteed roundtrip encoding, URL-safe output, and built-in UUID generation.'
+                       'Guaranteed roundtrip encoding, URL-safe output, and built-in UUID generation.'
   spec.homepage      = 'https://github.com/philiprehberger/rb-compact-id'
   spec.license       = 'MIT'
 
