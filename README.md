@@ -15,7 +15,7 @@ Compact UUID encoding in Base58 and Base62 for shorter, URL-safe identifiers
 Add to your Gemfile:
 
 ```ruby
-gem 'philiprehberger-compact_id'
+gem "philiprehberger-compact_id"
 ```
 
 Or install directly:
