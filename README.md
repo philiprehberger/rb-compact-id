@@ -3,6 +3,7 @@
 [![Tests](https://github.com/philiprehberger/rb-compact-id/actions/workflows/ci.yml/badge.svg)](https://github.com/philiprehberger/rb-compact-id/actions/workflows/ci.yml)
 [![Gem Version](https://badge.fury.io/rb/philiprehberger-compact_id.svg)](https://rubygems.org/gems/philiprehberger-compact_id)
 [![License](https://img.shields.io/github/license/philiprehberger/rb-compact-id)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
 
 Compact UUID encoding in Base58 and Base62 for shorter, URL-safe identifiers
 
@@ -90,4 +91,4 @@ bundle exec rubocop
 
 ## License
 
-MIT
+[MIT](LICENSE)
