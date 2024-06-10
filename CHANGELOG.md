@@ -7,6 +7,15 @@ and this gem adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-03
+
+### Added
+- Add `batch_generate(count, format:)` to generate multiple compact IDs at once
+- Add `batch_to_base58(uuids)` and `batch_to_base62(uuids)` for bulk UUID encoding
+- Add `base58_to_base62(str)` and `base62_to_base58(str)` for direct cross-format conversion
+- Add `format?(str)` to detect whether a string is Base58, Base62, or unknown
+- Add `decode(str)` to auto-detect format and decode to UUID
+
 ## [0.1.7] - 2026-03-31
 
 ### Added

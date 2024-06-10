@@ -54,6 +54,39 @@ Philiprehberger::CompactId.generate(:base58)  # => new UUID as Base58
 Philiprehberger::CompactId.generate(:base62)  # => new UUID as Base62
 ```
 
+### Batch Operations
+
+```ruby
+# Generate multiple IDs at once
+ids = Philiprehberger::CompactId.batch_generate(5)
+ids = Philiprehberger::CompactId.batch_generate(5, format: :base62)
+
+# Bulk encode arrays of UUIDs
+uuids = [SecureRandom.uuid, SecureRandom.uuid]
+Philiprehberger::CompactId.batch_to_base58(uuids)
+Philiprehberger::CompactId.batch_to_base62(uuids)
+```
+
+### Cross-Format Conversion
+
+```ruby
+b58 = Philiprehberger::CompactId.to_base58(uuid)
+b62 = Philiprehberger::CompactId.base58_to_base62(b58)  # direct, no intermediate UUID
+b58 = Philiprehberger::CompactId.base62_to_base58(b62)
+```
+
+### Format Detection and Auto-Decode
+
+```ruby
+Philiprehberger::CompactId.format?('6fpBHktS7sqEUqhp4E2nE4')  # => :base58
+Philiprehberger::CompactId.format?('0abc')                     # => :base62
+Philiprehberger::CompactId.format?('!!!')                      # => :unknown
+
+# Auto-detect and decode
+Philiprehberger::CompactId.decode('6fpBHktS7sqEUqhp4E2nE4')
+# => "550e8400-e29b-41d4-a716-446655440000"
+```
+
 ### Validation
 
 ```ruby
@@ -72,6 +105,13 @@ Philiprehberger::CompactId.valid_base58?('0OIl')                     # => false 
 | `.from_base58(str)` | Decode a Base58 string back to a UUID |
 | `.from_base62(str)` | Decode a Base62 string back to a UUID |
 | `.generate(format = :base58)` | Generate a new UUID and encode it (`:base58` or `:base62`) |
+| `.batch_generate(count, format: :base58)` | Generate multiple compact IDs at once |
+| `.batch_to_base58(uuids)` | Bulk encode an array of UUIDs to Base58 |
+| `.batch_to_base62(uuids)` | Bulk encode an array of UUIDs to Base62 |
+| `.base58_to_base62(str)` | Convert a Base58 string directly to Base62 |
+| `.base62_to_base58(str)` | Convert a Base62 string directly to Base58 |
+| `.format?(str)` | Detect format: returns `:base58`, `:base62`, or `:unknown` |
+| `.decode(str)` | Auto-detect format and decode to UUID |
 | `.valid_base58?(str)` | Check if a string contains only valid Base58 characters |
 | `.valid_base62?(str)` | Check if a string contains only valid Base62 characters |
 | `Error` | Error class raised for invalid UUIDs or characters |
