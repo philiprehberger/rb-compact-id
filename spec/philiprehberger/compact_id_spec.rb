@@ -178,6 +178,43 @@ RSpec.describe Philiprehberger::CompactId do
     end
   end
 
+  describe '.sortable_id' do
+    it 'generates a base62-encoded sortable ID by default' do
+      result = described_class.sortable_id
+      expect(result).to be_a(String)
+      expect(described_class.valid_base62?(result)).to be true
+    end
+
+    it 'generates a base58-encoded sortable ID' do
+      result = described_class.sortable_id(format: :base58)
+      expect(result).to be_a(String)
+      expect(described_class.valid_base58?(result)).to be true
+    end
+
+    it 'generates unique values' do
+      results = Array.new(10) { described_class.sortable_id }
+      expect(results.uniq.length).to eq(10)
+    end
+
+    it 'produces IDs that sort chronologically' do
+      first = described_class.sortable_id
+      sleep(0.002)
+      second = described_class.sortable_id
+      expect(second > first).to be true
+    end
+
+    it 'produces IDs that sort chronologically in base58' do
+      first = described_class.sortable_id(format: :base58)
+      sleep(0.002)
+      second = described_class.sortable_id(format: :base58)
+      expect(second > first).to be true
+    end
+
+    it 'raises on unsupported format' do
+      expect { described_class.sortable_id(format: :base64) }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+  end
+
   describe '.batch_to_base58' do
     it 'encodes an array of UUIDs to base58' do
       uuids = Array.new(3) { SecureRandom.uuid }

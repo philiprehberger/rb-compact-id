@@ -67,6 +67,22 @@ Philiprehberger::CompactId.batch_to_base58(uuids)
 Philiprehberger::CompactId.batch_to_base62(uuids)
 ```
 
+### Sortable IDs
+
+```ruby
+# Generate a time-sortable ID (base62 by default)
+id = Philiprehberger::CompactId.sortable_id
+# => "1BqPdWn6G5kR8z3mVx7Y" (lexicographically sortable)
+
+# IDs generated later always sort after earlier ones
+first = Philiprehberger::CompactId.sortable_id
+second = Philiprehberger::CompactId.sortable_id
+second > first  # => true
+
+# Use base58 encoding
+id = Philiprehberger::CompactId.sortable_id(format: :base58)
+```
+
 ### Cross-Format Conversion
 
 ```ruby
@@ -106,6 +122,7 @@ Philiprehberger::CompactId.valid_base58?('0OIl')                     # => false 
 | `.from_base62(str)` | Decode a Base62 string back to a UUID |
 | `.generate(format = :base58)` | Generate a new UUID and encode it (`:base58` or `:base62`) |
 | `.batch_generate(count, format: :base58)` | Generate multiple compact IDs at once |
+| `.sortable_id(format: :base62)` | Generate a time-sortable ID with millisecond precision |
 | `.batch_to_base58(uuids)` | Bulk encode an array of UUIDs to Base58 |
 | `.batch_to_base62(uuids)` | Bulk encode an array of UUIDs to Base62 |
 | `.base58_to_base62(str)` | Convert a Base58 string directly to Base62 |
