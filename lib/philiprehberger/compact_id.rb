@@ -127,7 +127,7 @@ module Philiprehberger
         index = alphabet.index(char)
         raise Error, "Invalid character: #{char}" if index.nil?
 
-        num * base + index
+        (num * base) + index
       end
     end
     private_class_method :decode
