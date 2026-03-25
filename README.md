@@ -71,9 +71,14 @@ Philiprehberger::CompactId.valid_base58?('0OIl')                     # => false 
 | `.to_base62(uuid)` | Encode a UUID as a Base62 string (22 chars) |
 | `.from_base58(str)` | Decode a Base58 string back to a UUID |
 | `.from_base62(str)` | Decode a Base62 string back to a UUID |
-| `.generate(format)` | Generate a new UUID and encode it (`:base58` or `:base62`) |
+| `.generate(format = :base58)` | Generate a new UUID and encode it (`:base58` or `:base62`) |
 | `.valid_base58?(str)` | Check if a string contains only valid Base58 characters |
 | `.valid_base62?(str)` | Check if a string contains only valid Base62 characters |
+| `Error` | Error class raised for invalid UUIDs or characters |
+| `BASE58_ALPHABET` | Character set used for Base58 encoding (excludes `0`, `O`, `I`, `l`) |
+| `BASE62_ALPHABET` | Character set used for Base62 encoding (alphanumeric `0-9A-Za-z`) |
+| `UUID_PATTERN` | Regex pattern used to validate UUID format |
+| `VERSION` | Current gem version string |
 
 ## Development
 
