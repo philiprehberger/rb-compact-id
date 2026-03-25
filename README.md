@@ -27,7 +27,7 @@ gem install philiprehberger-compact_id
 ## Usage
 
 ```ruby
-require 'philiprehberger/compact_id'
+require "philiprehberger/compact_id"
 
 uuid = '550e8400-e29b-41d4-a716-446655440000'
 
@@ -79,8 +79,8 @@ Philiprehberger::CompactId.valid_base58?('0OIl')                     # => false 
 
 ```bash
 bundle install
-bundle exec rspec      # Run tests
-bundle exec rubocop    # Check code style
+bundle exec rspec
+bundle exec rubocop
 ```
 
 ## License
