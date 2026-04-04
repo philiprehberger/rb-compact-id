@@ -37,7 +37,7 @@ module Philiprehberger
     # @return [String] UUID with dashes
     # @raise [Error] if the string contains invalid characters
     def self.from_base58(str)
-      int_to_uuid(decode(str, BASE58_ALPHABET))
+      int_to_uuid(decode_str(str, BASE58_ALPHABET))
     end
 
     # Decode a Base62 string back to a UUID
@@ -46,7 +46,7 @@ module Philiprehberger
     # @return [String] UUID with dashes
     # @raise [Error] if the string contains invalid characters
     def self.from_base62(str)
-      int_to_uuid(decode(str, BASE62_ALPHABET))
+      int_to_uuid(decode_str(str, BASE62_ALPHABET))
     end
 
     # Generate a new UUID and encode it
@@ -61,6 +61,92 @@ module Philiprehberger
       when :base58 then to_base58(uuid)
       when :base62 then to_base62(uuid)
       else raise Error, "Unknown format: #{format}. Use :base58 or :base62"
+      end
+    end
+
+    # Generate multiple compact IDs at once
+    #
+    # @param count [Integer] number of IDs to generate
+    # @param format [Symbol] :base58 or :base62
+    # @return [Array<String>] array of encoded UUIDs
+    # @raise [Error] if format is invalid or count is not a positive integer
+    def self.batch_generate(count, format: :base58)
+      raise Error, 'Count must be a positive integer' unless count.is_a?(Integer) && count.positive?
+
+      Array.new(count) { generate(format) }
+    end
+
+    # Bulk encode an array of UUIDs to Base58
+    #
+    # @param uuids [Array<String>] array of UUIDs with dashes
+    # @return [Array<String>] array of Base58-encoded strings
+    # @raise [Error] if any UUID format is invalid
+    def self.batch_to_base58(uuids)
+      raise Error, 'Expected an Array of UUIDs' unless uuids.is_a?(Array)
+
+      uuids.map { |uuid| to_base58(uuid) }
+    end
+
+    # Bulk encode an array of UUIDs to Base62
+    #
+    # @param uuids [Array<String>] array of UUIDs with dashes
+    # @return [Array<String>] array of Base62-encoded strings
+    # @raise [Error] if any UUID format is invalid
+    def self.batch_to_base62(uuids)
+      raise Error, 'Expected an Array of UUIDs' unless uuids.is_a?(Array)
+
+      uuids.map { |uuid| to_base62(uuid) }
+    end
+
+    # Convert a Base58 string directly to Base62
+    #
+    # @param str [String] Base58-encoded string
+    # @return [String] Base62-encoded string
+    # @raise [Error] if the string contains invalid characters
+    def self.base58_to_base62(str)
+      num = decode_str(str, BASE58_ALPHABET)
+      encode(num, BASE62_ALPHABET, 22)
+    end
+
+    # Convert a Base62 string directly to Base58
+    #
+    # @param str [String] Base62-encoded string
+    # @return [String] Base58-encoded string
+    # @raise [Error] if the string contains invalid characters
+    def self.base62_to_base58(str)
+      num = decode_str(str, BASE62_ALPHABET)
+      encode(num, BASE58_ALPHABET, 22)
+    end
+
+    # Detect the format of an encoded string
+    #
+    # @param str [String] encoded string to check
+    # @return [Symbol] :base58, :base62, or :unknown
+    def self.format?(str)
+      return :unknown unless str.is_a?(String) && !str.empty?
+
+      # Base58 is a strict subset of Base62, so check Base58 first.
+      # A string is only :base62 if it contains characters outside the Base58 alphabet.
+      if valid_base58?(str)
+        :base58
+      elsif valid_base62?(str)
+        :base62
+      else
+        :unknown
+      end
+    end
+
+    # Auto-detect format and decode to UUID
+    #
+    # @param str [String] Base58 or Base62 encoded string
+    # @return [String] UUID with dashes
+    # @raise [Error] if the format cannot be detected or string is invalid
+    def self.decode(str)
+      detected = format?(str)
+      case detected
+      when :base58 then from_base58(str)
+      when :base62 then from_base62(str)
+      else raise Error, "Unable to detect format of: #{str}"
       end
     end
 
@@ -121,7 +207,7 @@ module Philiprehberger
     private_class_method :encode
 
     # @api private
-    def self.decode(str, alphabet)
+    def self.decode_str(str, alphabet)
       base = alphabet.length
       str.each_char.reduce(0) do |num, char|
         index = alphabet.index(char)
@@ -130,6 +216,6 @@ module Philiprehberger
         (num * base) + index
       end
     end
-    private_class_method :decode
+    private_class_method :decode_str
   end
 end

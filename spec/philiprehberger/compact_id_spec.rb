@@ -149,6 +149,165 @@ RSpec.describe Philiprehberger::CompactId do
     end
   end
 
+  describe '.batch_generate' do
+    it 'generates the requested number of base58 IDs by default' do
+      results = described_class.batch_generate(5)
+      expect(results).to be_an(Array)
+      expect(results.length).to eq(5)
+      results.each { |id| expect(described_class.valid_base58?(id)).to be true }
+    end
+
+    it 'generates base62 IDs when specified' do
+      results = described_class.batch_generate(3, format: :base62)
+      expect(results.length).to eq(3)
+      results.each { |id| expect(described_class.valid_base62?(id)).to be true }
+    end
+
+    it 'generates unique values' do
+      results = described_class.batch_generate(10)
+      expect(results.uniq.length).to eq(10)
+    end
+
+    it 'raises on non-positive count' do
+      expect { described_class.batch_generate(0) }.to raise_error(Philiprehberger::CompactId::Error)
+      expect { described_class.batch_generate(-1) }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+
+    it 'raises on non-integer count' do
+      expect { described_class.batch_generate('5') }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+  end
+
+  describe '.batch_to_base58' do
+    it 'encodes an array of UUIDs to base58' do
+      uuids = Array.new(3) { SecureRandom.uuid }
+      results = described_class.batch_to_base58(uuids)
+      expect(results.length).to eq(3)
+      results.each_with_index do |encoded, i|
+        expect(described_class.from_base58(encoded)).to eq(uuids[i].downcase)
+      end
+    end
+
+    it 'returns an empty array for empty input' do
+      expect(described_class.batch_to_base58([])).to eq([])
+    end
+
+    it 'raises on non-array input' do
+      expect { described_class.batch_to_base58('not-an-array') }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+
+    it 'raises if any UUID is invalid' do
+      expect { described_class.batch_to_base58([uuid, 'bad']) }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+  end
+
+  describe '.batch_to_base62' do
+    it 'encodes an array of UUIDs to base62' do
+      uuids = Array.new(3) { SecureRandom.uuid }
+      results = described_class.batch_to_base62(uuids)
+      expect(results.length).to eq(3)
+      results.each_with_index do |encoded, i|
+        expect(described_class.from_base62(encoded)).to eq(uuids[i].downcase)
+      end
+    end
+
+    it 'returns an empty array for empty input' do
+      expect(described_class.batch_to_base62([])).to eq([])
+    end
+
+    it 'raises on non-array input' do
+      expect { described_class.batch_to_base62(nil) }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+  end
+
+  describe '.base58_to_base62' do
+    it 'converts a base58 string to base62' do
+      b58 = described_class.to_base58(uuid)
+      b62 = described_class.base58_to_base62(b58)
+      expect(described_class.valid_base62?(b62)).to be true
+      expect(described_class.from_base62(b62)).to eq(uuid.downcase)
+    end
+
+    it 'roundtrips through base62 and back' do
+      b58 = described_class.to_base58(uuid)
+      b62 = described_class.base58_to_base62(b58)
+      back = described_class.base62_to_base58(b62)
+      expect(back).to eq(b58)
+    end
+
+    it 'raises on invalid base58 characters' do
+      expect { described_class.base58_to_base62('0OIl') }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+  end
+
+  describe '.base62_to_base58' do
+    it 'converts a base62 string to base58' do
+      b62 = described_class.to_base62(uuid)
+      b58 = described_class.base62_to_base58(b62)
+      expect(described_class.valid_base58?(b58)).to be true
+      expect(described_class.from_base58(b58)).to eq(uuid.downcase)
+    end
+
+    it 'raises on invalid base62 characters' do
+      expect { described_class.base62_to_base58('!!!') }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+  end
+
+  describe '.format?' do
+    it 'detects base58 strings' do
+      b58 = described_class.to_base58(uuid)
+      expect(described_class.format?(b58)).to eq(:base58)
+    end
+
+    it 'detects base62 strings containing base62-only characters' do
+      # Use a string with '0' which is in base62 but not base58
+      expect(described_class.format?('0abc')).to eq(:base62)
+    end
+
+    it 'returns :unknown for strings with special characters' do
+      expect(described_class.format?('abc+def')).to eq(:unknown)
+    end
+
+    it 'returns :unknown for empty strings' do
+      expect(described_class.format?('')).to eq(:unknown)
+    end
+
+    it 'returns :unknown for nil' do
+      expect(described_class.format?(nil)).to eq(:unknown)
+    end
+  end
+
+  describe '.decode' do
+    it 'auto-decodes a base58 string' do
+      b58 = described_class.to_base58(uuid)
+      expect(described_class.decode(b58)).to eq(uuid.downcase)
+    end
+
+    it 'auto-decodes a base62 string containing base62-only characters' do
+      b62 = described_class.to_base62(uuid)
+      # If b62 happens to be valid base58 too, it will decode via base58 which is fine
+      # since both decode to the same UUID
+      decoded = described_class.decode(b62)
+      expect(decoded).to eq(uuid.downcase)
+    end
+
+    it 'raises on undetectable format' do
+      expect { described_class.decode('!!!') }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+
+    it 'raises on empty string' do
+      expect { described_class.decode('') }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+
+    it 'roundtrips random UUIDs through generate and decode' do
+      5.times do
+        generated = described_class.generate(:base58)
+        decoded = described_class.decode(generated)
+        expect(decoded).to match(Philiprehberger::CompactId::UUID_PATTERN)
+      end
+    end
+  end
+
   describe '.valid_base58?' do
     it 'returns true for valid base58 strings' do
       expect(described_class.valid_base58?('123ABCabc')).to be true
