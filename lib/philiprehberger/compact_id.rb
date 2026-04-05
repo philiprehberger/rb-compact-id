@@ -76,6 +76,27 @@ module Philiprehberger
       Array.new(count) { generate(format) }
     end
 
+    # Generate a time-sortable ID by combining a millisecond timestamp with random bytes
+    #
+    # IDs generated later will always sort lexicographically after earlier ones.
+    # The ID is composed of the current time in milliseconds (high bits) and 64 bits
+    # of randomness (low bits), encoded in the specified format.
+    #
+    # @param format [Symbol] :base58 or :base62
+    # @return [String] time-sortable encoded ID
+    # @raise [Error] if format is unsupported
+    def self.sortable_id(format: :base62)
+      ms = (Time.now.to_f * 1000).to_i
+      random = SecureRandom.random_number(2**64)
+      combined = (ms << 64) | random
+
+      case format
+      when :base58 then encode(combined, BASE58_ALPHABET, 0)
+      when :base62 then encode(combined, BASE62_ALPHABET, 0)
+      else raise Error, "unsupported format: #{format}"
+      end
+    end
+
     # Bulk encode an array of UUIDs to Base58
     #
     # @param uuids [Array<String>] array of UUIDs with dashes

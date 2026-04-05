@@ -7,6 +7,11 @@ and this gem adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-04-04
+
+### Added
+- Add `sortable_id(format:)` to generate time-sortable IDs using millisecond timestamps with random bytes
+
 ## [0.2.0] - 2026-04-03
 
 ### Added
