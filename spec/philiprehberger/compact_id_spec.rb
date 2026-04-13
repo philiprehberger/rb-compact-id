@@ -345,6 +345,95 @@ RSpec.describe Philiprehberger::CompactId do
     end
   end
 
+  describe '.generate_prefixed' do
+    it 'generates a prefixed base58 ID by default' do
+      result = described_class.generate_prefixed('usr')
+      expect(result).to start_with('usr_')
+      id = result.split('_', 2).last
+      expect(described_class.valid_base58?(id)).to be true
+    end
+
+    it 'generates a prefixed base62 ID' do
+      result = described_class.generate_prefixed('ord', format: :base62)
+      expect(result).to start_with('ord_')
+      id = result.split('_', 2).last
+      expect(described_class.valid_base62?(id)).to be true
+    end
+
+    it 'supports a custom separator' do
+      result = described_class.generate_prefixed('txn', separator: '-')
+      expect(result).to start_with('txn-')
+    end
+
+    it 'raises on empty prefix' do
+      expect { described_class.generate_prefixed('') }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+
+    it 'raises on nil prefix' do
+      expect { described_class.generate_prefixed(nil) }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+
+    it 'raises on non-alphanumeric prefix' do
+      expect { described_class.generate_prefixed('us-r') }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+
+    it 'raises on alphanumeric separator' do
+      expect { described_class.generate_prefixed('usr', separator: 'a') }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+
+    it 'generates unique values' do
+      results = Array.new(10) { described_class.generate_prefixed('usr') }
+      expect(results.uniq.length).to eq(10)
+    end
+  end
+
+  describe '.parse_prefixed' do
+    it 'parses a prefixed base58 ID' do
+      prefixed = described_class.generate_prefixed('usr')
+      result = described_class.parse_prefixed(prefixed)
+      expect(result[:prefix]).to eq('usr')
+      expect(result[:id]).to be_a(String)
+      expect(result[:uuid]).to match(Philiprehberger::CompactId::UUID_PATTERN)
+    end
+
+    it 'parses a prefixed base62 ID' do
+      prefixed = described_class.generate_prefixed('ord', format: :base62)
+      result = described_class.parse_prefixed(prefixed)
+      expect(result[:prefix]).to eq('ord')
+      expect(result[:uuid]).to match(Philiprehberger::CompactId::UUID_PATTERN)
+    end
+
+    it 'parses with a custom separator' do
+      prefixed = described_class.generate_prefixed('txn', separator: '-')
+      result = described_class.parse_prefixed(prefixed, separator: '-')
+      expect(result[:prefix]).to eq('txn')
+      expect(result[:uuid]).to match(Philiprehberger::CompactId::UUID_PATTERN)
+    end
+
+    it 'roundtrips through generate and parse' do
+      prefixed = described_class.generate_prefixed('usr', format: :base58)
+      parsed = described_class.parse_prefixed(prefixed)
+      re_encoded = described_class.to_base58(parsed[:uuid])
+      expect(re_encoded).to eq(parsed[:id])
+    end
+
+    it 'raises on string without separator' do
+      expect { described_class.parse_prefixed('noseparator') }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+
+    it 'raises on empty string' do
+      expect { described_class.parse_prefixed('') }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+
+    it 'raises on nil' do
+      expect { described_class.parse_prefixed(nil) }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+
+    it 'raises when ID portion is empty' do
+      expect { described_class.parse_prefixed('usr_') }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+  end
+
   describe '.valid_base58?' do
     it 'returns true for valid base58 strings' do
       expect(described_class.valid_base58?('123ABCabc')).to be true

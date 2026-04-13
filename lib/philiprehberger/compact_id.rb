@@ -171,6 +171,38 @@ module Philiprehberger
       end
     end
 
+    # Generate a compact ID with a type prefix
+    #
+    # @param prefix [String] type prefix (e.g. 'usr', 'ord', 'txn')
+    # @param format [Symbol] :base58 or :base62
+    # @param separator [String] character between prefix and ID (default '_')
+    # @return [String] prefixed compact ID (e.g. 'usr_6fpBHktS7sqEUqhp4E2nE4')
+    # @raise [Error] if prefix or separator is invalid
+    def self.generate_prefixed(prefix, format: :base58, separator: '_')
+      validate_prefix!(prefix)
+      validate_separator!(separator)
+      "#{prefix}#{separator}#{generate(format)}"
+    end
+
+    # Parse a prefixed compact ID into its components
+    #
+    # @param str [String] prefixed compact ID (e.g. 'usr_6fpBHktS7sqEUqhp4E2nE4')
+    # @param separator [String] character between prefix and ID (default '_')
+    # @return [Hash] { prefix:, id:, uuid: }
+    # @raise [Error] if the string has no separator or the ID cannot be decoded
+    def self.parse_prefixed(str, separator: '_')
+      raise Error, 'Expected a non-empty String' unless str.is_a?(String) && !str.empty?
+
+      parts = str.split(separator, 2)
+      raise Error, "No separator '#{separator}' found in: #{str}" if parts.length < 2 || parts[1].empty?
+
+      prefix = parts[0]
+      id = parts[1]
+      uuid = decode(id)
+
+      { prefix: prefix, id: id, uuid: uuid }
+    end
+
     # Check if a string is valid Base58
     #
     # @param str [String] string to validate
@@ -190,6 +222,22 @@ module Philiprehberger
 
       str.each_char.all? { |c| BASE62_ALPHABET.include?(c) }
     end
+
+    PREFIX_PATTERN = /\A[a-zA-Z0-9]+\z/
+
+    # @api private
+    def self.validate_prefix!(prefix)
+      raise Error, 'Prefix must be a non-empty String' unless prefix.is_a?(String) && !prefix.empty?
+      raise Error, "Prefix must be alphanumeric: #{prefix}" unless prefix.match?(PREFIX_PATTERN)
+    end
+    private_class_method :validate_prefix!
+
+    # @api private
+    def self.validate_separator!(separator)
+      raise Error, 'Separator must be a single character' unless separator.is_a?(String) && separator.length == 1
+      raise Error, 'Separator must not be alphanumeric' if separator.match?(/[a-zA-Z0-9]/)
+    end
+    private_class_method :validate_separator!
 
     # @api private
     def self.validate_uuid!(uuid)
