@@ -83,6 +83,25 @@ second > first  # => true
 id = Philiprehberger::CompactId.sortable_id(format: :base58)
 ```
 
+### Prefixed IDs
+
+```ruby
+# Generate IDs with a type prefix (like Stripe's cus_, sub_, etc.)
+id = Philiprehberger::CompactId.generate_prefixed('usr')
+# => "usr_6fpBHktS7sqEUqhp4E2nE4"
+
+id = Philiprehberger::CompactId.generate_prefixed('ord', format: :base62)
+# => "ord_2p4LKNR0UIk6cNgrSdg1bS"
+
+# Use a custom separator
+id = Philiprehberger::CompactId.generate_prefixed('txn', separator: '-')
+# => "txn-6fpBHktS7sqEUqhp4E2nE4"
+
+# Parse a prefixed ID back into its components
+parsed = Philiprehberger::CompactId.parse_prefixed('usr_6fpBHktS7sqEUqhp4E2nE4')
+# => { prefix: "usr", id: "6fpBHktS7sqEUqhp4E2nE4", uuid: "550e8400-..." }
+```
+
 ### Cross-Format Conversion
 
 ```ruby
@@ -127,6 +146,8 @@ Philiprehberger::CompactId.valid_base58?('0OIl')                     # => false 
 | `.batch_to_base62(uuids)` | Bulk encode an array of UUIDs to Base62 |
 | `.base58_to_base62(str)` | Convert a Base58 string directly to Base62 |
 | `.base62_to_base58(str)` | Convert a Base62 string directly to Base58 |
+| `.generate_prefixed(prefix, format: :base58, separator: '_')` | Generate a compact ID with a type prefix |
+| `.parse_prefixed(str, separator: '_')` | Parse a prefixed ID into `{ prefix:, id:, uuid: }` |
 | `.format?(str)` | Detect format: returns `:base58`, `:base62`, or `:unknown` |
 | `.decode(str)` | Auto-detect format and decode to UUID |
 | `.valid_base58?(str)` | Check if a string contains only valid Base58 characters |

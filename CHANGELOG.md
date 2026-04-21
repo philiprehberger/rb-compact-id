@@ -7,6 +7,12 @@ and this gem adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-04-12
+
+### Added
+- Add `generate_prefixed(prefix, format:, separator:)` to create compact IDs with a type prefix (e.g. `usr_6fpBHktS7sqEUqhp4E2nE4`)
+- Add `parse_prefixed(str, separator:)` to split a prefixed ID into prefix, encoded ID, and decoded UUID
+
 ## [0.3.0] - 2026-04-04
 
 ### Added
