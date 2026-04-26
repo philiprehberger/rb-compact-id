@@ -122,6 +122,16 @@ Philiprehberger::CompactId.decode('6fpBHktS7sqEUqhp4E2nE4')
 # => "550e8400-e29b-41d4-a716-446655440000"
 ```
 
+### Strict Decoding
+
+```ruby
+require "philiprehberger/compact_id"
+
+uuid = Philiprehberger::CompactId.generate(:base58)
+Philiprehberger::CompactId.decode_safe(uuid, expected_format: :base58)
+# => "..." (original UUID)
+```
+
 ### Validation
 
 ```ruby
@@ -150,6 +160,7 @@ Philiprehberger::CompactId.valid_base58?('0OIl')                     # => false 
 | `.parse_prefixed(str, separator: '_')` | Parse a prefixed ID into `{ prefix:, id:, uuid: }` |
 | `.format?(str)` | Detect format: returns `:base58`, `:base62`, or `:unknown` |
 | `.decode(str)` | Auto-detect format and decode to UUID |
+| `.decode_safe(str, expected_format:)` | Decode only when detected format matches; raises otherwise |
 | `.valid_base58?(str)` | Check if a string contains only valid Base58 characters |
 | `.valid_base62?(str)` | Check if a string contains only valid Base62 characters |
 | `Error` | Error class raised for invalid UUIDs or characters |

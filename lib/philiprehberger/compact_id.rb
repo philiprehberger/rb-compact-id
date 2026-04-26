@@ -171,6 +171,26 @@ module Philiprehberger
       end
     end
 
+    # Safer variant of `.decode` that only succeeds when the detected encoding
+    # matches the expected format. Use when consuming IDs that should be a
+    # specific encoding to prevent silent confusion between Base58 and Base62.
+    #
+    # @param str [String]
+    # @param expected_format [Symbol] :base58 or :base62
+    # @return [String] decoded UUID
+    # @raise [Error] if the detected format does not match
+    # @raise [ArgumentError] if expected_format is not a known format
+    def self.decode_safe(str, expected_format:)
+      unless %i[base58 base62].include?(expected_format)
+        raise ArgumentError, "unknown expected_format: #{expected_format.inspect}"
+      end
+
+      detected = format?(str)
+      raise Error, "expected #{expected_format} but got #{detected}" unless detected == expected_format
+
+      expected_format == :base58 ? from_base58(str) : from_base62(str)
+    end
+
     # Generate a compact ID with a type prefix
     #
     # @param prefix [String] type prefix (e.g. 'usr', 'ord', 'txn')

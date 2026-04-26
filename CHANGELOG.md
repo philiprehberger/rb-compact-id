@@ -7,6 +7,11 @@ and this gem adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-04-25
+
+### Added
+- `CompactId.decode_safe(str, expected_format:)` — strict decoding that raises when the detected encoding does not match the expected format
+
 ## [0.4.0] - 2026-04-12
 
 ### Added

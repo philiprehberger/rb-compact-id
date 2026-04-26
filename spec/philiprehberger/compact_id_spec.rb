@@ -345,6 +345,34 @@ RSpec.describe Philiprehberger::CompactId do
     end
   end
 
+  describe '.decode_safe' do
+    it 'decodes a base58 string when expected_format is :base58' do
+      b58 = described_class.to_base58(uuid)
+      expect(described_class.decode_safe(b58, expected_format: :base58)).to eq(uuid.downcase)
+    end
+
+    it 'decodes a base62 string when expected_format is :base62' do
+      # Use a string that contains base62-only characters so the detected format is :base62
+      b62 = '0abc'
+      decoded = described_class.decode_safe(b62, expected_format: :base62)
+      expect(decoded).to match(Philiprehberger::CompactId::UUID_PATTERN)
+    end
+
+    it 'raises Error when decoding a base58 string with expected_format :base62' do
+      b58 = described_class.to_base58(uuid)
+      expect { described_class.decode_safe(b58, expected_format: :base62) }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+
+    it 'raises ArgumentError on unknown expected_format' do
+      b58 = described_class.to_base58(uuid)
+      expect { described_class.decode_safe(b58, expected_format: :base64) }.to raise_error(ArgumentError)
+    end
+
+    it 'raises Error on a garbage string' do
+      expect { described_class.decode_safe('!!!', expected_format: :base58) }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+  end
+
   describe '.generate_prefixed' do
     it 'generates a prefixed base58 ID by default' do
       result = described_class.generate_prefixed('usr')
