@@ -97,6 +97,29 @@ module Philiprehberger
       end
     end
 
+    # Extract the embedded timestamp from a sortable ID.
+    #
+    # Recovers the high 64 bits of the integer encoded by `sortable_id`
+    # (millisecond Unix epoch) and returns it as a `Time`.
+    #
+    # @param str [String] a string previously produced by `sortable_id`
+    # @param format [Symbol] :base58 or :base62 — encoding of the input
+    # @return [Time] the millisecond-resolution time at which the ID was generated
+    # @raise [Error] when format is unsupported or the string contains invalid characters
+    def self.sortable_timestamp(str, format: :base62)
+      raise Error, 'Expected a non-empty String' unless str.is_a?(String) && !str.empty?
+
+      alphabet = case format
+                 when :base58 then BASE58_ALPHABET
+                 when :base62 then BASE62_ALPHABET
+                 else raise Error, "unsupported format: #{format}"
+                 end
+
+      combined = decode_str(str, alphabet)
+      ms = combined >> 64
+      Time.at(ms / 1000.0)
+    end
+
     # Bulk encode an array of UUIDs to Base58
     #
     # @param uuids [Array<String>] array of UUIDs with dashes

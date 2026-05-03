@@ -81,6 +81,10 @@ second > first  # => true
 
 # Use base58 encoding
 id = Philiprehberger::CompactId.sortable_id(format: :base58)
+
+# Recover the embedded timestamp (millisecond resolution)
+ts = Philiprehberger::CompactId.sortable_timestamp(id, format: :base58)
+# => 2026-05-02 14:30:12 -0700
 ```
 
 ### Prefixed IDs
@@ -152,6 +156,7 @@ Philiprehberger::CompactId.valid_base58?('0OIl')                     # => false 
 | `.generate(format = :base58)` | Generate a new UUID and encode it (`:base58` or `:base62`) |
 | `.batch_generate(count, format: :base58)` | Generate multiple compact IDs at once |
 | `.sortable_id(format: :base62)` | Generate a time-sortable ID with millisecond precision |
+| `.sortable_timestamp(str, format: :base62)` | Recover the embedded `Time` from a sortable ID |
 | `.batch_to_base58(uuids)` | Bulk encode an array of UUIDs to Base58 |
 | `.batch_to_base62(uuids)` | Bulk encode an array of UUIDs to Base62 |
 | `.base58_to_base62(str)` | Convert a Base58 string directly to Base62 |

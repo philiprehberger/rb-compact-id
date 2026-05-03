@@ -7,6 +7,11 @@ and this gem adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-02
+
+### Added
+- `CompactId.sortable_timestamp(str, format: :base62)` — extract the embedded millisecond timestamp from an ID produced by `sortable_id`, returned as a `Time`
+
 ## [0.5.0] - 2026-04-25
 
 ### Added

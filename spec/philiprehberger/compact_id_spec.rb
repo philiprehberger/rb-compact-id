@@ -215,6 +215,54 @@ RSpec.describe Philiprehberger::CompactId do
     end
   end
 
+  describe '.sortable_timestamp' do
+    it 'recovers the timestamp from a base62 sortable ID within millisecond resolution' do
+      before = Time.now
+      id = described_class.sortable_id
+      after = Time.now
+      ts = described_class.sortable_timestamp(id)
+      expect(ts).to be_a(Time)
+      expect(ts.to_f).to be >= (before.to_f - 0.001)
+      expect(ts.to_f).to be <= (after.to_f + 0.001)
+    end
+
+    it 'recovers the timestamp from a base58 sortable ID' do
+      before = Time.now
+      id = described_class.sortable_id(format: :base58)
+      after = Time.now
+      ts = described_class.sortable_timestamp(id, format: :base58)
+      expect(ts).to be >= (before - 0.001)
+      expect(ts).to be <= (after + 0.001)
+    end
+
+    it 'preserves chronological ordering across recovered timestamps' do
+      first_id = described_class.sortable_id
+      sleep(0.005)
+      second_id = described_class.sortable_id
+      first_ts = described_class.sortable_timestamp(first_id)
+      second_ts = described_class.sortable_timestamp(second_id)
+      expect(second_ts).to be >= first_ts
+    end
+
+    it 'raises on unsupported format' do
+      id = described_class.sortable_id
+      expect do
+        described_class.sortable_timestamp(id, format: :base64)
+      end.to raise_error(Philiprehberger::CompactId::Error)
+    end
+
+    it 'raises when given a non-String' do
+      expect { described_class.sortable_timestamp(nil) }.to raise_error(Philiprehberger::CompactId::Error)
+      expect { described_class.sortable_timestamp('') }.to raise_error(Philiprehberger::CompactId::Error)
+    end
+
+    it 'raises when the string contains characters outside the alphabet' do
+      expect do
+        described_class.sortable_timestamp('!!not-valid!!', format: :base62)
+      end.to raise_error(Philiprehberger::CompactId::Error)
+    end
+  end
+
   describe '.batch_to_base58' do
     it 'encodes an array of UUIDs to base58' do
       uuids = Array.new(3) { SecureRandom.uuid }
